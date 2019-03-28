@@ -15,7 +15,6 @@ import org.springframework.context.annotation.Profile
 import org.springframework.web.client.RestTemplate
 import org.springframework.web.socket.WebSocketSession
 import pl.allegro.finance.tradukisto.ValueConverters
-import java.util.*
 
 
 @JBot
@@ -28,7 +27,7 @@ class ClippordTheBot : Bot() {
         }
     }
 
-    override fun getSlackToken() = System.getenv("CLIPPORD_SLACK_TOKEN")
+    override fun getSlackToken() = System.getenv("CLIPPORD_SLACK_TOKEN")!!
     private val langTool = JLanguageTool(BritishEnglish())
     override fun getSlackBot(): Bot = this
 
@@ -66,17 +65,6 @@ class ClippordTheBot : Bot() {
     private val converter
         get() = ValueConverters.ENGLISH_INTEGER
 
-}
-
-data class OrWrapper<T>(private val random: () -> Random, private val funcs: List<() -> T>) {
-    infix fun or(function: () -> T): OrWrapper<T> = this.copy(random = random, funcs = funcs + listOf(function))
-
-    fun getValue(): T = funcs[random().nextInt(funcs.size)]()
-}
-
-val rand = Random()
-fun <T> choose(function: () -> T): OrWrapper<T> {
-    return OrWrapper({ rand }, listOf(function))
 }
 
 @SpringBootApplication(scanBasePackages = ["me.ramswaroop.jbot", "ml.ohca.bots"])

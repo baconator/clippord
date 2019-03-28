@@ -1,6 +1,7 @@
 package ml.ohca.bots
 
 import pl.allegro.finance.tradukisto.ValueConverters
+import java.util.*
 
 fun passiveAggressiveIntro(errorCount: Int, converter: ValueConverters) = (choose {
     "Ruh-roh, there might be a typ-oh!"
@@ -48,3 +49,14 @@ Or in other numerous and random exceptions such as 'science', 'forfeit', and 'we
 } or {
     "Motivational quote #${rand.nextInt(5) + 3}\"The pen is mightier than the sword.\" -Albert Einstein"
 }).getValue()
+
+data class OrWrapper<T>(private val random: () -> Random, private val funcs: List<() -> T>) {
+    infix fun or(function: () -> T): OrWrapper<T> = this.copy(random = random, funcs = funcs + listOf(function))
+
+    fun getValue(): T = funcs[random().nextInt(funcs.size)]()
+}
+
+val rand = Random()
+fun <T> choose(function: () -> T): OrWrapper<T> {
+    return OrWrapper({ rand }, listOf(function))
+}
