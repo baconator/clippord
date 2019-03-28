@@ -28,11 +28,18 @@ class ClippordTheBot : Bot() {
     }
 
     override fun getSlackToken() = System.getenv("CLIPPORD_SLACK_TOKEN")!!
+
+    private val whitelistedChannels
+        get() = System.getenv("CLIPPORD_WHITELISTED_CHANNELS").split("|").map { it.trim() }.toSet()
+
     private val langTool = JLanguageTool(BritishEnglish())
+
     override fun getSlackBot(): Bot = this
 
     @Controller(events = [EventType.MESSAGE])
     fun onReceiveMessage(session: WebSocketSession, event: Event) {
+        if (event.channel.name !in whitelistedChannels) return
+
         val matches = langTool.check((event.text ?: "").replace(Regex("[*|_>`~]"), " "))
 
         if (matches.isNotEmpty()) {
@@ -46,7 +53,7 @@ class ClippordTheBot : Bot() {
                 }
                 responseBuilder.append("\n")
             }
-            responseBuilder.append(passiveAggressiveOutro(matches.size) + "\n")
+            responseBuilder.append(passiveAggressiveOutro() + "\n")
 
             val response = Message(responseBuilder.toString())
             response.threadTs = event.threadTs ?: event.ts // Responds in a thread, continuing the same one if possible.
@@ -54,7 +61,7 @@ class ClippordTheBot : Bot() {
         }
     }
 
-    private fun passiveAggressiveOutro(errorCount: Int) = ""
+    private fun passiveAggressiveOutro() = ""
 
     private val converter
         get() = ValueConverters.ENGLISH_INTEGER
