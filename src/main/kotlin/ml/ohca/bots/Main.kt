@@ -34,7 +34,7 @@ class ClippordTheBot : Bot() {
 
     @Controller(events = [EventType.MESSAGE])
     fun onReceiveMessage(session: WebSocketSession, event: Event) {
-        val matches = langTool.check(event.text ?: "".map {
+        val matches = langTool.check((event.text ?: "").map {
             if (it in setOf('*', '_', '>', '`', '~')) { // Filter out Slack formatting commands.
                 ' '
             } else {
@@ -78,12 +78,17 @@ class ClippordTheBot : Bot() {
         }
         "Don't worry, we all make one or two$message mistakes sometimes."
     } or {
-        "Whoops! Looks like you overlooked $errorCount errors! Let me list them out for you."
+        val message = if (errorCount > 1) {
+            "${converter.asWords(errorCount)} typos"
+        } else {
+            "a typo"
+        }
+        "Whoops! Looks like you overlooked $message! Let me list them out for you."
     } or {
         val message = if (errorCount > 1) {
-            "${converter.asWords(errorCount)} errors"
+            "${converter.asWords(errorCount)} typos"
         } else {
-            "error"
+            "typo"
         }
         "What's important is that you tried, not the $message."
     } or {
@@ -100,6 +105,12 @@ Or in compound words as in 'albeit'
 Or occasionally in technical words with strong etymological links to their parent languages as in 'cuneiform'
 Or in other numerous and random exceptions such as 'science', 'forfeit', and 'weird'.
 (source: https://www.merriam-webster.com/words-at-play/i-before-e-except-after-c)"""
+    } or {
+        "locs_frontend_eng_typoDescriptionMessage"
+    } or {
+        "TYYYPOOOOOOOOSSSSSSSS (╯°□°）╯︵ ┻━┻"
+    } or {
+        "Motivational quote #${rand.nextInt(5) + 3}\"The pen is mightier than the sword.\" -Albert Einstein"
     }).getValue()
 
 }
