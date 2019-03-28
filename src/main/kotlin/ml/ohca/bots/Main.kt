@@ -33,13 +33,7 @@ class ClippordTheBot : Bot() {
 
     @Controller(events = [EventType.MESSAGE])
     fun onReceiveMessage(session: WebSocketSession, event: Event) {
-        val matches = langTool.check((event.text ?: "").map {
-            if (it in setOf('*', '_', '>', '`', '~')) { // Filter out Slack formatting commands.
-                ' '
-            } else {
-                it
-            }
-        }.joinToString(""))
+        val matches = langTool.check((event.text ?: "").replace(Regex("[*|_>`~]"), " "))
 
         if (matches.isNotEmpty()) {
             val responseBuilder = StringBuilder()
