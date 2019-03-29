@@ -16,7 +16,6 @@ import org.springframework.web.client.RestTemplate
 import org.springframework.web.socket.WebSocketSession
 import pl.allegro.finance.tradukisto.ValueConverters
 
-const val whitelistEnvironmentVariableName = "CLIPPORD_WHITELISTED_CHANNELS"
 const val slackTokenEnvironmentVariableName = "CLIPPORD_SLACK_TOKEN"
 
 @JBot
@@ -31,19 +30,12 @@ class ClippordTheBot : Bot() {
 
     override fun getSlackToken() = System.getenv(slackTokenEnvironmentVariableName)!!
 
-    private val whitelistedChannels
-        get() = System.getenv(whitelistEnvironmentVariableName).split("|").map { it.trim() }.toSet()
-
     private val langTool = JLanguageTool(BritishEnglish())
 
     override fun getSlackBot(): Bot = this
 
     @Controller(events = [EventType.MESSAGE])
     fun onReceiveMessage(session: WebSocketSession, event: Event) {
-        if (event.channel.name !in whitelistedChannels) {
-            System.err.println("Channel '${event.channel.name}' is not in whitelist ('|' delimited list in env var $whitelistEnvironmentVariableName). Current whitelist: $whitelistedChannels")
-        }
-
         val matches = langTool.check((event.text ?: "").replace(Regex("[*|_>`~]"), " "))
 
         if (matches.isNotEmpty()) {
